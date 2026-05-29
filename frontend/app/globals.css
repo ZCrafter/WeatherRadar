@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #0b1020;
+  color: #e9eefc;
+}
+
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+input, button {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #334;
+}
+
+button {
+  cursor: pointer;
+}
