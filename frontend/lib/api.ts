@@ -1,4 +1,4 @@
-const base = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const base = process.env.NEXT_PUBLIC_API_BASE || "http://YOUR_TRUENAS_IP:8000";
 
 export async function getLocations() {
   const res = await fetch(`${base}/api/locations`, { cache: "no-store" });
