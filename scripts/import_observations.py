@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.append(str(ROOT / "backend"))
+sys.path.insert(0, str(ROOT / "backend"))
 
 from app.db import SessionLocal, Base, engine
 from app import crud, models
@@ -13,7 +13,7 @@ from app.openmeteo import build_observation_rows
 
 Base.metadata.create_all(bind=engine)
 
-def day_range(days_back: int = 7):
+def day_range(days_back: int):
     end = datetime.now(timezone.utc).date()
     start = end - timedelta(days=days_back)
     return start.isoformat(), end.isoformat()
@@ -28,6 +28,7 @@ async def main(days_back: int = 7):
             return
 
         start_date, end_date = day_range(days_back)
+
         for loc in locations:
             print(f"Importing observations for {loc.name}")
             rows = await build_observation_rows(loc.latitude, loc.longitude, loc.timezone, start_date, end_date)
