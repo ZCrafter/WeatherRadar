@@ -1,8 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from app.routes import router
+from app.scheduler import start_scheduler, stop_scheduler
 
-app = FastAPI(title="Weather Tracker")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    stop_scheduler()
+
+app = FastAPI(title="Weather Tracker", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
