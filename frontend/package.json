@@ -1,5 +1,5 @@
 {
-  "name": "weather-tracker-frontend",
+  "name": "weather-radar-frontend",
   "private": true,
   "scripts": {
     "dev": "next dev -p 7101",
@@ -9,6 +9,7 @@
   "dependencies": {
     "next": "14.2.14",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "plotly.js-dist-min": "^2.35.2"
   }
 }
