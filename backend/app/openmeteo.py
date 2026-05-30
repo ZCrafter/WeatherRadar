@@ -67,3 +67,25 @@ async def build_snapshot_rows(latitude: float, longitude: float, timezone_name: 
             "raw_json": data,
         })
     return out
+
+async def build_observation_rows(latitude: float, longitude: float, timezone_name: str, start_date: str, end_date: str):
+    data = await fetch_historical(latitude, longitude, start_date, end_date, timezone_name)
+    hourly = data.get("hourly", {})
+    times = hourly.get("time", [])
+    temps = hourly.get("temperature_2m", [])
+    winds = hourly.get("wind_speed_10m", [])
+    precs = hourly.get("precipitation", [])
+
+    out = []
+    for i, t in enumerate(times):
+        dt = datetime.fromisoformat(t)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        out.append({
+            "observed_time": dt,
+            "temperature_2m": temps[i] if i < len(temps) else None,
+            "wind_speed_10m": winds[i] if i < len(winds) else None,
+            "precipitation": precs[i] if i < len(precs) else None,
+            "raw_json": data,
+        })
+    return out
