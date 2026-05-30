@@ -2,7 +2,6 @@ import httpx
 from datetime import datetime, timezone
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
-PREVIOUS_RUNS_URL = "https://api.open-meteo.com/v1/forecast"
 
 async def fetch_forecast(latitude: float, longitude: float, timezone_name: str = "auto", model: str | None = None):
     params = {
@@ -19,7 +18,7 @@ async def fetch_forecast(latitude: float, longitude: float, timezone_name: str =
         r.raise_for_status()
         return r.json()
 
-def _lead_bucket_minutes(minutes: int) -> int:
+def _bucket(minutes: int) -> int:
     choices = [30, 60, 120, 180, 360, 720, 1440, 2880, 5760, 8640]
     return min(choices, key=lambda x: abs(x - minutes))
 
@@ -34,13 +33,17 @@ async def fetch_model_snapshot(latitude: float, longitude: float, timezone_name:
 
     out = []
     for i, t in enumerate(times):
-        target = datetime.fromisoformat(t).replace(tzinfo=timezone.utc)
+        target = datetime.fromisoformat(t)
+        if target.tzinfo is None:
+            target = target.replace(tzinfo=timezone.utc)
         lead = int((target - now).total_seconds() / 60)
+        if lead < 0:
+            continue
         out.append({
             "run_time": now,
             "target_time": target,
             "lead_minutes": lead,
-            "bucket_minutes": _lead_bucket_minutes(max(0, lead)),
+            "bucket_minutes": _bucket(lead),
             "temperature_2m": temps[i] if i < len(temps) else None,
             "wind_speed_10m": winds[i] if i < len(winds) else None,
             "precipitation": precs[i] if i < len(precs) else None,
