@@ -12,20 +12,22 @@ services:
     restart: unless-stopped
 
   backend:
-  build: ./backend
-  env_file: .env
-  depends_on:
-    - db
-  ports:
-    - "8000:8000"
-  volumes:
-    - ./:/repo
-    - ./backend:/app
-    - ./data:/data
-  restart: unless-stopped
+    build:
+      context: ./backend
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./scripts:/scripts
+      - ./data:/data
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     env_file: .env
     depends_on:
       - backend
