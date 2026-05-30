@@ -1,8 +1,4 @@
-export default function ModelSelector({
-  models,
-}: {
-  models: any[];
-}) {
+export default function ModelSelector({ models }: { models: any[] }) {
   return (
     <div style={{ marginBottom: 24 }}>
       <h2>Models</h2>
