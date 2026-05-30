@@ -25,12 +25,12 @@ class SnapshotRead(BaseModel):
     target_time: datetime
     lead_minutes: int
     temperature_2m: Optional[float] = None
-    wind_speed_10m: Optional[float] = None
     precipitation: Optional[float] = None
+    wind_speed_10m: Optional[float] = None
 
 class ObservationCreate(BaseModel):
     location_id: int
     observed_time: datetime
     temperature_2m: Optional[float] = None
-    wind_speed_10m: Optional[float] = None
     precipitation: Optional[float] = None
+    wind_speed_10m: Optional[float] = None
