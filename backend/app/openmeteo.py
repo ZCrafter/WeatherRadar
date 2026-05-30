@@ -2,7 +2,6 @@ import httpx
 from datetime import datetime, timezone
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
-HISTORICAL_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 async def fetch_forecast(latitude: float, longitude: float, timezone_name: str = "auto", model: str | None = None):
     params = {
@@ -16,20 +15,6 @@ async def fetch_forecast(latitude: float, longitude: float, timezone_name: str =
         params["models"] = model
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.get(FORECAST_URL, params=params)
-        r.raise_for_status()
-        return r.json()
-
-async def fetch_historical(latitude: float, longitude: float, start_date: str, end_date: str, timezone_name: str = "auto"):
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "hourly": "temperature_2m,wind_speed_10m,precipitation",
-        "start_date": start_date,
-        "end_date": end_date,
-        "timezone": timezone_name,
-    }
-    async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.get(HISTORICAL_URL, params=params)
         r.raise_for_status()
         return r.json()
 
