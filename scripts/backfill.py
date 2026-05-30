@@ -12,8 +12,6 @@ from app.openmeteo import build_snapshot_rows
 
 Base.metadata.create_all(bind=engine)
 
-LEAD_BUCKETS = [30, 60, 120, 180, 360, 720, 1440, 2880, 5760, 8640]
-
 async def main():
     db = SessionLocal()
     try:
@@ -21,22 +19,13 @@ async def main():
         locations = crud.list_locations(db)
         enabled_models = [m.name for m in crud.list_models(db) if m.enabled]
 
-        if not locations:
-            print("No locations found.")
-            return
-
         for loc in locations:
-            print(f"Processing location: {loc.name}")
+            print(f"Processing {loc.name}")
             for model_name in enabled_models:
                 try:
-                    print(f"  Model: {model_name}")
                     rows = await build_snapshot_rows(loc.latitude, loc.longitude, loc.timezone, model_name)
                     count = 0
                     for row in rows:
-                        if row["lead_minutes"] < 0:
-                            continue
-                        if row["bucket_minutes"] not in LEAD_BUCKETS:
-                            continue
                         snap = models.ForecastSnapshot(
                             location_id=loc.id,
                             model=model_name,
@@ -50,9 +39,9 @@ async def main():
                         )
                         crud.add_snapshot(db, snap)
                         count += 1
-                    print(f"    saved {count} rows")
+                    print(f"  {model_name}: {count}")
                 except Exception as e:
-                    print(f"    skipped {model_name}: {e}")
+                    print(f"  skipped {model_name}: {e}")
     finally:
         db.close()
 
