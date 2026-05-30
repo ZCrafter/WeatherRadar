@@ -1,7 +1,7 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone
-import json
+from datetime import datetime
 from app.db import get_db, Base, engine
 from app import crud, schemas, models
 from app.openmeteo import fetch_model_snapshot
@@ -9,12 +9,6 @@ from app.scoring import mae, bias
 
 router = APIRouter(prefix="/api")
 Base.metadata.create_all(bind=engine)
-
-@router.on_event("startup")
-def startup():
-    db = next(get_db())
-    crud.init_models(db)
-    db.close()
 
 @router.get("/locations", response_model=list[schemas.LocationRead])
 def read_locations(db: Session = Depends(get_db)):
@@ -45,13 +39,13 @@ async def snapshot_location(location_id: int, db: Session = Depends(get_db)):
     if not loc:
         raise HTTPException(status_code=404, detail="Location not found")
 
-    models_to_use = [m.name for m in crud.list_models(db) if m.enabled]
+    crud.init_models(db)
+    enabled_models = [m.name for m in crud.list_models(db) if m.enabled]
     created = 0
-    for model_name in models_to_use:
+
+    for model_name in enabled_models:
         rows = await fetch_model_snapshot(loc.latitude, loc.longitude, loc.timezone, model_name)
         for row in rows:
-            if row["lead_minutes"] < 0:
-                continue
             snap = models.ForecastSnapshot(
                 location_id=loc.id,
                 model=model_name,
@@ -65,6 +59,7 @@ async def snapshot_location(location_id: int, db: Session = Depends(get_db)):
             )
             crud.add_snapshot(db, snap)
             created += 1
+
     return {"location_id": loc.id, "created": created}
 
 @router.get("/snapshots/{location_id}", response_model=list[schemas.SnapshotRead])
@@ -85,12 +80,11 @@ def comparison(location_id: int, db: Session = Depends(get_db)):
     by_model = {}
 
     for s in snaps:
-        key = s.model
-        by_model.setdefault(key, {"temp_pred": [], "temp_obs": []})
+        by_model.setdefault(s.model, {"temp_pred": [], "temp_obs": []})
         o = obs_map.get(s.target_time.replace(tzinfo=None))
         if o:
-            by_model[key]["temp_pred"].append(s.temperature_2m)
-            by_model[key]["temp_obs"].append(o.temperature_2m)
+            by_model[s.model]["temp_pred"].append(s.temperature_2m)
+            by_model[s.model]["temp_obs"].append(o.temperature_2m)
 
     result = []
     for model_name, vals in by_model.items():
