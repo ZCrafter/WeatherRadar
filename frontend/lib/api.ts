@@ -5,6 +5,11 @@ export async function getLocations() {
   return res.json();
 }
 
+export async function getModels() {
+  const res = await fetch(`${base}/api/models`, { cache: "no-store" });
+  return res.json();
+}
+
 export async function addLocation(payload: {
   name: string;
   latitude: number;
@@ -21,8 +26,16 @@ export async function addLocation(payload: {
 }
 
 export async function deleteLocation(id: number) {
-  const res = await fetch(`${base}/api/locations/${id}`, {
-    method: "DELETE",
-  });
+  const res = await fetch(`${base}/api/locations/${id}`, { method: "DELETE" });
+  return res.json();
+}
+
+export async function runSnapshot(locationId: number) {
+  const res = await fetch(`${base}/api/snapshot/${locationId}`, { method: "POST" });
+  return res.json();
+}
+
+export async function getComparison(locationId: number) {
+  const res = await fetch(`${base}/api/comparison/${locationId}`, { cache: "no-store" });
   return res.json();
 }
