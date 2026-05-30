@@ -6,15 +6,18 @@ body {
 }
 
 main {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
 }
 
-input, button {
+input, button, select {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #334;
+  margin-bottom: 8px;
+  background: #111a33;
+  color: #e9eefc;
 }
 
 button {
