@@ -14,15 +14,12 @@ async def collect_all_snapshots():
         crud.init_models(db)
         locations = crud.list_locations(db)
         enabled_models = [m.name for m in crud.list_models(db) if m.enabled]
+
         for loc in locations:
             for model_name in enabled_models:
                 try:
                     rows = await build_snapshot_rows(loc.latitude, loc.longitude, loc.timezone, model_name)
                     for row in rows:
-                        if row["lead_minutes"] < 0:
-                            continue
-                        if row["bucket_minutes"] not in [30, 60, 120, 180, 360, 720, 1440, 2880, 5760, 8640]:
-                            continue
                         snap = models.ForecastSnapshot(
                             location_id=loc.id,
                             model=model_name,
@@ -44,13 +41,7 @@ def run_collection():
     asyncio.run(collect_all_snapshots())
 
 def start_scheduler():
-    scheduler.add_job(
-        run_collection,
-        "interval",
-        minutes=settings.scheduler_interval_minutes,
-        id="snapshot_job",
-        replace_existing=True
-    )
+    scheduler.add_job(run_collection, "interval", minutes=settings.scheduler_interval_minutes, id="snapshot_job", replace_existing=True)
     scheduler.start()
 
 def stop_scheduler():
