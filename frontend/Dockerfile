@@ -4,4 +4,4 @@ COPY package.json ./
 RUN npm install
 COPY . .
 EXPOSE 7001
-CMD ["npm", "run", "dev", "--", "-p", "7001"]
+CMD ["npm", "run", "dev"]
