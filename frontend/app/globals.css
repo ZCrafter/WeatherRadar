@@ -6,12 +6,12 @@ body {
 }
 
 main {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
 }
 
-input, button, select {
+input, button, select, textarea {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #334;
@@ -22,4 +22,11 @@ input, button, select {
 
 button {
   cursor: pointer;
+}
+
+.card {
+  background: #111a33;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
