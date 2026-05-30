@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from app import models, schemas
 
 DEFAULT_MODELS = [
+    "best_match",
     "ecmwf_ifs",
     "gfs_seamless",
     "icon_global",
@@ -41,7 +43,7 @@ def list_snapshots(db: Session, location_id: int):
     return (
         db.query(models.ForecastSnapshot)
         .filter(models.ForecastSnapshot.location_id == location_id)
-        .order_by(models.ForecastSnapshot.target_time.asc())
+        .order_by(models.ForecastSnapshot.target_time.asc(), models.ForecastSnapshot.model.asc())
         .all()
     )
 
@@ -64,3 +66,7 @@ def list_observations(db: Session, location_id: int):
         .order_by(models.Observation.observed_time.asc())
         .all()
     )
+
+def get_observation_map(db: Session, location_id: int):
+    obs = list_observations(db, location_id)
+    return {o.observed_time.replace(tzinfo=None): o for o in obs}
