@@ -2,7 +2,7 @@
   "name": "weather-tracker-frontend",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 7001"
     "build": "next build",
     "start": "next start"
   },
