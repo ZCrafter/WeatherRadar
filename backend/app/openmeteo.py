@@ -4,6 +4,11 @@ from datetime import datetime, timezone
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 HISTORICAL_URL = "https://archive-api.open-meteo.com/v1/archive"
 
+def _normalize_model(model: str):
+    if model == "best_match":
+        return None
+    return model
+
 async def fetch_forecast(latitude: float, longitude: float, timezone_name: str = "auto", model: str | None = None):
     params = {
         "latitude": latitude,
@@ -12,13 +17,13 @@ async def fetch_forecast(latitude: float, longitude: float, timezone_name: str =
         "forecast_days": 7,
         "timezone": timezone_name,
     }
-    if model:
-        params["models"] = model
+    m = _normalize_model(model) if model else None
+    if m:
+        params["models"] = m
     async with httpx.AsyncClient(timeout=30) as client:
         r = await client.get(FORECAST_URL, params=params)
         if r.status_code >= 400:
             raise RuntimeError(f"Open-Meteo error {r.status_code}: {r.text[:300]}")
-        r.raise_for_status()
         return r.json()
 
 async def fetch_historical(latitude: float, longitude: float, start_date: str, end_date: str, timezone_name: str = "auto"):
@@ -36,8 +41,8 @@ async def fetch_historical(latitude: float, longitude: float, start_date: str, e
         return r.json()
 
 def lead_bucket(minutes: int) -> int:
-    choices = [30, 60, 120, 180, 360, 720, 1440, 2880, 5760, 8640]
-    return min(choices, key=lambda x: abs(x - minutes))
+    buckets = [30, 60, 120, 180, 360, 720, 1440, 2880, 5760, 8640]
+    return min(buckets, key=lambda x: abs(x - minutes))
 
 async def build_snapshot_rows(latitude: float, longitude: float, timezone_name: str, model: str):
     data = await fetch_forecast(latitude, longitude, timezone_name, model=model)
