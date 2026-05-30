@@ -10,7 +10,7 @@ async def lifespan(app: FastAPI):
     yield
     stop_scheduler()
 
-app = FastAPI(title="Weather Tracker", lifespan=lifespan)
+app = FastAPI(title="Weather Radar", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
