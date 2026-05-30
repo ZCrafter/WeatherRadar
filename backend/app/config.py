@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     backend_url: str = "http://backend:8000"
     openmeteo_tz: str = "auto"
     scheduler_interval_minutes: int = 30
+    snapshot_models: str = "ecmwf_ifs,gfs_seamless,icon_global,gem_global"
 
     class Config:
         env_file = ".env"
