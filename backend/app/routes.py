@@ -1,10 +1,9 @@
 import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
 from app.db import get_db, Base, engine
 from app import crud, schemas, models
-from app.openmeteo import fetch_model_snapshot
+from app.openmeteo import build_snapshot_rows
 from app.scoring import mae, bias
 
 router = APIRouter(prefix="/api")
@@ -44,8 +43,10 @@ async def snapshot_location(location_id: int, db: Session = Depends(get_db)):
     created = 0
 
     for model_name in enabled_models:
-        rows = await fetch_model_snapshot(loc.latitude, loc.longitude, loc.timezone, model_name)
+        rows = await build_snapshot_rows(loc.latitude, loc.longitude, loc.timezone, model_name)
         for row in rows:
+            if row["lead_minutes"] < 0:
+                continue
             snap = models.ForecastSnapshot(
                 location_id=loc.id,
                 model=model_name,
