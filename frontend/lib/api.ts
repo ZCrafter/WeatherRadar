@@ -35,6 +35,11 @@ export async function runSnapshot(locationId: number) {
   return res.json();
 }
 
+export async function backfillObservations(daysBack: number) {
+  const res = await fetch(`${base}/api/backfill/observations?days_back=${daysBack}`, { method: "POST" });
+  return res.json();
+}
+
 export async function getComparison(locationId: number) {
   const res = await fetch(`${base}/api/comparison/${locationId}`, { cache: "no-store" });
   return res.json();
