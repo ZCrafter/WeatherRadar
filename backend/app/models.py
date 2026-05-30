@@ -27,8 +27,8 @@ class ForecastSnapshot(Base):
     target_time = Column(DateTime(timezone=True), nullable=False, index=True)
     lead_minutes = Column(Integer, nullable=False, index=True)
     temperature_2m = Column(Float, nullable=True)
-    wind_speed_10m = Column(Float, nullable=True)
     precipitation = Column(Float, nullable=True)
+    wind_speed_10m = Column(Float, nullable=True)
     raw_json = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -38,7 +38,7 @@ class Observation(Base):
     location_id = Column(Integer, nullable=False, index=True)
     observed_time = Column(DateTime(timezone=True), nullable=False, index=True)
     temperature_2m = Column(Float, nullable=True)
-    wind_speed_10m = Column(Float, nullable=True)
     precipitation = Column(Float, nullable=True)
+    wind_speed_10m = Column(Float, nullable=True)
     raw_json = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
