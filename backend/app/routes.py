@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db, Base, engine
 from app import crud, schemas, models
-from app.openmeteo import build_snapshot_rows
+from app.openmeteo import build_snapshot_rows, build_observation_rows
 from app.scoring import mae, bias
 
 router = APIRouter(prefix="/api")
@@ -45,8 +45,6 @@ async def snapshot_location(location_id: int, db: Session = Depends(get_db)):
     for model_name in enabled_models:
         rows = await build_snapshot_rows(loc.latitude, loc.longitude, loc.timezone, model_name)
         for row in rows:
-            if row["lead_minutes"] < 0:
-                continue
             snap = models.ForecastSnapshot(
                 location_id=loc.id,
                 model=model_name,
@@ -62,6 +60,33 @@ async def snapshot_location(location_id: int, db: Session = Depends(get_db)):
             created += 1
 
     return {"location_id": loc.id, "created": created}
+
+@router.post("/backfill/observations")
+async def backfill_observations(days_back: int = 7, db: Session = Depends(get_db)):
+    locations = crud.list_locations(db)
+    created = 0
+    for loc in locations:
+        start_date = None
+        end_date = None
+        rows = await build_observation_rows(
+            loc.latitude,
+            loc.longitude,
+            loc.timezone,
+            start_date=(__import__("datetime").datetime.now(__import__("datetime").timezone.utc).date() - __import__("datetime").timedelta(days=days_back)).isoformat(),
+            end_date=(__import__("datetime").datetime.now(__import__("datetime").timezone.utc).date()).isoformat(),
+        )
+        for row in rows:
+            obs = models.Observation(
+                location_id=loc.id,
+                observed_time=row["observed_time"],
+                temperature_2m=row["temperature_2m"],
+                wind_speed_10m=row["wind_speed_10m"],
+                precipitation=row["precipitation"],
+                raw_json=json.dumps(row["raw_json"]),
+            )
+            crud.add_observation(db, obs)
+            created += 1
+    return {"created": created}
 
 @router.get("/snapshots/{location_id}", response_model=list[schemas.SnapshotRead])
 def snapshots(location_id: int, db: Session = Depends(get_db)):
